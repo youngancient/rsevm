@@ -7,26 +7,26 @@ pub struct Log{
     pub data : Vec<u8>
 }
 
-pub struct State {
-    pc: usize,
-    value: U256,
-    calldata: Vec<u8>,
-    gas : u64,
-    sender : Address,
+pub struct EVM {
+    pub pc: usize,
+    pub value: U256,
+    pub calldata: Vec<u8>,
+    pub gas : u64,
+    pub sender : Address,
     // sub components
-    program : Vec<u8>,
-    stack: Stack,
-    memory: Memory,
-    storage: Storage,
+    pub program : Vec<u8>,
+    pub stack: Stack,
+    pub memory: Memory,
+    pub storage: Storage,
     // flags
-    stop_flag: bool,
-    revert_flag: bool,
+    pub stop_flag: bool,
+    pub revert_flag: bool,
     // output
-    return_data: Vec<u8>,
-    logs: Vec<Log>,
+    pub return_data: Vec<u8>,
+    pub logs: Vec<Log>,
 }
 
-impl State {
+impl EVM {
     pub fn new(sender : Address, program : Vec<u8>, gas : u64, value : U256, calldata : Vec<u8>) -> Self {
         Self {
             pc: 0,

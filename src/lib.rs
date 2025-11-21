@@ -1,4 +1,5 @@
-mod stack;
-mod memory;
-mod storage;
-mod state;
+pub mod stack;
+pub mod memory;
+pub mod storage;
+pub mod evm;
+pub mod opcodes;
