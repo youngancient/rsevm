@@ -33,9 +33,69 @@ pub fn origin(vm: &mut EVM) -> Result<(), EvmError> {
 //     Ok(())
 // }
 
-pub fn callvalue(vm: &mut EVM) -> Result<(), EvmError> {
+pub fn call_value(vm: &mut EVM) -> Result<(), EvmError> {
     vm.gas_dec(2)?;
     vm.stack.push(vm.value)?;
     vm.pc += 1;
     Ok(())
 }
+
+pub fn call_data_load(vm: &mut EVM) -> Result<(), EvmError> {
+    todo!()
+}
+
+pub fn call_data_size(vm: &mut EVM) -> Result<(), EvmError> {
+    vm.gas_dec(2)?;
+    vm.stack.push(U256::from(vm.calldata.len()))?;
+    vm.pc += 1;
+
+    Ok(())
+}
+
+pub fn call_data_copy(vm: &mut EVM) -> Result<(), EvmError> {
+    todo!()
+}
+
+pub fn code_size(vm: &mut EVM) -> Result<(), EvmError> {
+    vm.gas_dec(2)?;
+    vm.stack.push(U256::from(vm.program.len()))?;
+    vm.pc += 1;
+
+    Ok(())
+}
+
+pub fn code_copy(vm: &mut EVM) -> Result<(), EvmError> {
+    todo!()
+}
+
+pub fn gas_price(vm: &mut EVM) -> Result<(), EvmError> {
+    vm.gas_dec(2)?;
+    vm.stack.push(U256::ZERO)?;
+    vm.pc += 1;
+    Ok(())
+}
+
+
+pub fn ext_code_copy(vm: &mut EVM) -> Result<(), EvmError> {
+    todo!()
+}
+
+pub fn return_data_size(vm: &mut EVM) -> Result<(), EvmError> {
+    vm.gas_dec(2)?;
+    vm.stack.push(U256::ZERO)?;
+    vm.pc += 1;
+    Ok(())
+}
+
+pub fn return_data_copy(vm: &mut EVM) -> Result<(), EvmError> {
+    todo!()
+}
+
+pub fn ext_code_hash(vm: &mut EVM) -> Result<(), EvmError> {
+    let _ = vm.stack.pop()?;
+    vm.gas_dec(2600)?;
+    vm.stack.push(U256::ZERO)?;
+    vm.pc += 1;
+    Ok(())
+}
+
