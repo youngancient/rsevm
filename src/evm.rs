@@ -9,6 +9,7 @@ pub enum EvmError {
     StackOverflow,
     MemoryOutOfBounds { offset: usize, size: usize, max: usize },
     ReturnDataOutOfBounds { offset: usize, size: usize, max: usize },
+    BadJumpDestination {dest : usize, reason : String}
 }
 pub struct Log {
     pub topics: Vec<U256>,
@@ -34,6 +35,10 @@ pub struct EVM {
     pub return_data: Vec<u8>,
     pub logs: Vec<Log>,
 }
+
+// todos:
+// opcodes left: Push, Swap and Log
+// EVM functions left: run 
 
 impl EVM {
     pub fn new(
@@ -67,6 +72,24 @@ impl EVM {
         }
         self.gas -= amount;
         Ok(())
+    }
+    pub fn peek(&self) -> u8{
+        self.program[self.pc]
+    }
+    pub fn reset(&mut self){
+        self.pc = 0;
+        self.stack = Stack::new();
+        self.memory = Memory::new();
+        self.storage = Storage::new();
+    }
+    pub fn should_execute_next_opcode(self) -> bool{
+        if self.pc > (self.program.len() - 1){  // means pc has reached the max program length
+            return false;
+        }
+        if self.stop_flag || self.revert_flag{
+            return false;
+        }
+        true
     }
 }
 

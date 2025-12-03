@@ -25,6 +25,20 @@ impl Stack {
     pub fn pop(&mut self) -> Result<U256, EvmError> {
         self.items.pop().ok_or(EvmError::StackUnderflow)
     }
+
+    pub fn len(&self) -> usize{
+        self.items.len()
+    }
+
+    // peek at item n slots from the top of the stack
+    pub fn peek(&self, n_from_top : usize) -> Result<U256, EvmError> {
+        let stack_length = self.items.len();
+        if stack_length < n_from_top{
+            return Err(EvmError::StackUnderflow);
+        }
+        let index = stack_length - 1 - n_from_top;  // subtract 1 because we want to start from index zero,
+        Ok(self.items[index])
+    }
 }
 
 #[cfg(test)]
