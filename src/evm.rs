@@ -79,6 +79,13 @@ impl Debug for Log {
 }
 
 pub struct EVM {
+    // The evm is dumb, it cannot different between hex values that are opcodes and those that are just values
+    // Its train of execution is directed by the program counter. 
+    // e.g given program -> [0x60, 0x69,0x60, 0x01, 0x55]. program[0] = 0x60 => PUSH1 
+    // Initially PC = 0, the EVM executes PUSH1
+    // PUSH1 updates PC by adding 2 bytes to it (one for itself, and one for the value pushed to the Stack)
+    // now PC = 2   program[2] = 0x60 => PUSH1, the EVM executes PUSH1
+    // As seen above, the EVM was dumb and only followed the directive of PC
     pub pc: usize,
     pub value: U256,
     pub calldata: Vec<u8>,
@@ -99,10 +106,6 @@ pub struct EVM {
     pub logs: Vec<Log>,
 }
 
-// todos:
-// opcodes left: Swap and Log
-// EVM functions left: run
-
 impl EVM {
     pub fn new(
         sender: Address,
@@ -112,7 +115,7 @@ impl EVM {
         calldata: Vec<u8>,
     ) -> Self {
         Self {
-            pc: 0,
+            pc: 0, 
             value,
             sender,
             calldata,
@@ -260,5 +263,112 @@ impl EVM {
             }
         }
         Ok(())
+    }
+
+    // for terminal UI
+    pub fn step(&mut self) -> Result<bool, EvmError> {
+        if !self.should_execute_next_opcode() {
+            return Ok(false);
+        }
+        let opcode = self.program[self.pc];
+        match opcode {
+            // STOP
+            STOP => stop(self)?,
+            // MATH
+            ADD => add(self)?,
+            SUB => sub(self)?,
+            MUL => mul(self)?,
+            SMOD => smod(self)?,
+            DIV => div(self)?,
+            SDIV => sdiv(self)?,
+            MOD => vm_mod(self)?,
+            ADDMOD => add_mod(self)?,
+            MULMOD => mul_mod(self)?,
+            SIGNEXTEND => signextend(self)?,
+            // BIT
+            BYTE => byte(self)?,
+            SHL => shl(self)?,
+            SHR => shr(self)?,
+            SAR => sar(self)?,
+            // LOGIC
+            LT => lt(self)?,
+            SLT => slt(self)?,
+            GT => gt(self)?,
+            SGT => sgt(self)?,
+            EQ => eq(self)?,
+            ISZERO => is_zero(self)?,
+            // DUP
+            DUP1..=DUP16 => {
+                // calculate n dynamically
+                let n = (opcode - DUP1 + 1) as usize; // 1 is added because DUP is 1-indexed
+                dup(self, n)?;
+            }
+            // ENVIRONMENT
+            ADDRESS => address(self)?,
+            BALANCE => balance(self)?,
+            ORIGIN => balance(self)?,
+            CALLVALUE => call_value(self)?,
+            CALLDATALOAD => call_data_load(self)?,
+            CALLDATASIZE => call_data_size(self)?,
+            CALLDATACOPY => call_data_copy(self)?,
+            CODESIZE => code_size(self)?,
+            CODECOPY => code_copy(self)?,
+            GASPRICE => gas_price(self)?,
+            EXTCODECOPY => ext_code_copy(self)?,
+            EXTCODEHASH => ext_code_hash(self)?,
+            RETURNDATACOPY => return_data_copy(self)?,
+            RETURNDATASIZE => return_data_size(self)?,
+            // JUMP
+            JUMP => jump(self)?,
+            JUMPI => jumpi(self)?,
+            JUMPDEST => jump_dest(self)?,
+            PC => pc(self)?,
+            // LOG
+            LOG0..=LOG4 => {
+                // calculate n dynamically
+                let n = (opcode - LOG0) as usize; // there's no need to add 1, since LOG is 0-indexed
+                log(self, n)?;
+            }
+            // LOGIC
+            AND => and(self)?,
+            OR => or(self)?,
+            XOR => xor(self)?,
+            NOT => not(self)?,
+            // MEMORY
+            MLOAD => mload(self)?,
+            MSTORE => mstore(self)?,
+            MSTORE8 => mstore8(self)?,
+            // MISC
+            SHA3 => sha3(self)?,
+            // POP
+            POP => pop(self)?,
+            // PUSH
+            PUSH1..=PUSH32 => {
+                // calculate n dynamically
+                let n = (opcode - PUSH1 + 1) as usize; // 1 is added because PUSH is 1-indexed
+                push(self, n)?;
+            }
+            // STORAGE
+            SLOAD => sload(self)?,
+            SSTORE => s_store(self)?,
+            // SWAP
+            SWAP1..=SWAP16 => {
+                // calculate n dynamically
+                // 0x90 - 0x90 + 1 = SWAP 1
+                // 0X91 - 0X90 + 1 = SWAP 2
+                let n = (opcode - SWAP1 + 1) as usize; // 1 is added because SWAP is 1-indexed
+                swap(self, n)?;
+            }
+            // TRANSIENT
+            TLOAD => tload(self)?,
+            TSTORE => tstore(self)?,
+            REVERT => revert(self)?,
+            _ => {
+                return Err(EvmError::UnknownOpcode {
+                    opcode: format!("0x{:02x}", opcode),
+                });
+            }
+        }
+        Ok(true)
     }
 }

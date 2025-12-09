@@ -1,7 +1,7 @@
 use crate::evm::EvmError;
 
 pub struct Memory {
-    memory: Vec<u8>,
+    pub memory: Vec<u8>,
 }
 
 impl Memory {

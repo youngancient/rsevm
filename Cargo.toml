@@ -5,3 +5,6 @@ edition = "2024"
 
 [dependencies]
 alloy-primitives = "1.4.1"
+ratatui = "0.29.0"
+crossterm = "0.28.1"
+anyhow = "1.0"

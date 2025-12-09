@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use alloy_primitives::U256;
 
 pub struct Storage {
-    storage: HashMap<U256, U256>,
+    pub storage: HashMap<U256, U256>,
     cache: HashSet<U256>,
 }
 
