@@ -8,6 +8,7 @@ use crate::{
         bit::{byte, sar, shl, shr},
         comparisons::{eq, gt, is_zero, lt, sgt, slt},
         contract::revert,
+        dup::dup,
         environment::{
             address, balance, call_data_copy, call_data_load, call_data_size, call_value,
             code_copy, code_size, ext_code_copy, ext_code_hash, gas_price, return_data_copy,
@@ -187,7 +188,9 @@ impl EVM {
                 ISZERO => is_zero(self)?,
                 // DUP
                 DUP1..=DUP16 => {
-                    // let n =
+                    // calculate n dynamically
+                    let n = (opcode - DUP1 + 1) as usize; // 1 is added because DUP is 1-indexed
+                    dup(self, n)?;
                 }
                 // ENVIRONMENT
                 ADDRESS => address(self)?,
@@ -258,13 +261,4 @@ impl EVM {
         }
         Ok(())
     }
-}
-
-#[cfg(test)]
-
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_state() {}
 }
