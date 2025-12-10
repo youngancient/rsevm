@@ -2,8 +2,20 @@
 
 > A robust, clean-room implementation of the Ethereum Virtual Machine (EVM) built from scratch in Rust, featuring a custom interactive Terminal UI (TUI) debugger.
 
-![EVM TUI Debugger Screenshot](./screenshot.png)
-*(screenshot of rsevm in execution)*
+## 📸 Visual Demo
+**Initial State**
+![EVM TUI Debugger Screenshot](./img/screenshot.png)
+
+**Execution State**
+![EVM TUI Debugger Screenshot](./img/screenshot2.png)
+
+**Success State**
+![EVM TUI Debugger Screenshot](./img/screenshot3.png)
+
+**Failed State**
+![EVM TUI Debugger Screenshot](./img/screenshot4.png)
+
+*(screenshots of rsevm in execution)*
 
 ## About The Project
 
