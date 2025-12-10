@@ -20,12 +20,12 @@ use std::{io, time::Duration};
 
 // Users can edit this
 fn user_input() -> (Vec<u8>, u64) {
-    // let program = vec![
-    //     0x60, 0x69,
-    //     0x60, 0x01, 
-    //     0x55,
-    //     ];
-    let program = vec![0x50];
+    let program = vec![
+        0x59, 0x69,
+        0x60, 0x01, 
+        0x55,
+        ];
+    // let program = vec![0x50];
     let desired_gas = 25000;
     (program, desired_gas)
 }
