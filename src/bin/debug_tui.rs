@@ -136,7 +136,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
             f.render_widget(List::new(memory_items).block(Block::default().borders(Borders::ALL).title(" Memory (16b) ")), top_row[1]);
 
              let storage_items: Vec<ListItem> = evm.storage.storage.iter().map(|(key, value)| {
-                ListItem::new(format!("S[{:#x}]:\n{:#x}", key, value))
+                ListItem::new(format!("S[{:#x}]: {:#x}", key, value))
             }).collect();
             f.render_widget(List::new(storage_items).block(Block::default().borders(Borders::ALL).title(" Storage ")), top_row[2]);
 
