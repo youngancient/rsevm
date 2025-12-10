@@ -25,7 +25,8 @@ fn user_input() -> (Vec<u8>, u64) {
         0x60, 0x01, 
         0x55,
         ];
-    let desired_gas = 1000;
+    // let program = vec![0x50];
+    let desired_gas = 25000;
     (program, desired_gas)
 }
 
@@ -46,7 +47,7 @@ fn main() -> Result<(), anyhow::Error> {
     // 3. Run the UI Loop
     let res = run_app(&mut terminal, &mut evm, desired_gas);
 
-    // 4. Cleanup Terminal (Crucial! Otherwise your terminal stays messed up)
+    // 4. Cleanup Terminal
     disable_raw_mode()?;
     execute!(
         terminal.backend_mut(),
@@ -65,7 +66,7 @@ fn main() -> Result<(), anyhow::Error> {
 
 fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u64) -> io::Result<()> {
     // Track if an error happened
-    let mut last_error: Option<String> = None;
+    let mut stop_reason: Option<String> = None;
     
     // Track the Scroll Position of the Bytecode
     let mut code_state = ListState::default();
@@ -96,10 +97,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
 
             // --- WIDGET 1: BYTECODE (Stateful!) ---
             let code_items: Vec<ListItem> = evm.program.iter().enumerate().map(|(i, &byte)| {
-                // HEX Index + HEX Value + Opcode Name
+                // HEX Index + HEX Value 
                 // Example: 0000: 60 [PUSH1]
-                let op_name = get_supported_opcode_name(byte);
-                let content = format!("{:04x}: {:02x}  [{}]", i, byte, op_name);
+                let content = format!("{:04x}: {:02x}", i, byte);
 
                 let style = if i == evm.pc { 
                     Style::default().fg(Color::Yellow).bg(Color::DarkGray).add_modifier(Modifier::BOLD) 
@@ -145,12 +145,29 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
 
             let status_block = Block::default().borders(Borders::ALL).title(" Status ");
             
-            if let Some(err_msg) = &last_error {
-                let error_text = format!("CRITICAL ERROR:\n{}\n\nPress 'q' to Quit", err_msg);
-                let paragraph = Paragraph::new(error_text)
-                    .style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)) 
-                    .block(status_block.border_style(Style::default().fg(Color::Red))); 
+           if let Some(msg) = &stop_reason {
+                let is_success = msg.contains("Program Finished");
+                
+                // Choose Color: Green for Success, Red for Error
+                let color = if is_success { Color::Green } else { Color::Red };
+                let title = if is_success { " COMPLETE " } else { " CRITICAL ERROR " };
+
+                let status_text = format!("{}:\n{}\n\nPress 'q' to Quit", title, msg);
+                
+                let paragraph = Paragraph::new(status_text)
+                    .style(Style::default().fg(color).add_modifier(Modifier::BOLD)) 
+                    .block(status_block.border_style(Style::default().fg(color))); 
+                
                 f.render_widget(paragraph, bottom_row[1]);
+
+                // Render Popup
+                let area = centered_rect(60, 30, f.area());
+                let popup = Paragraph::new(format!("{}\n\nReason: {}", title, msg))
+                    .style(Style::default().bg(color).fg(Color::Black)) // Black text on Color background
+                    .block(Block::default().borders(Borders::ALL).title(title));
+                f.render_widget(Clear, area);
+                f.render_widget(popup, area);
+
             } else {
                 // Used saturating_sub to prevent crash on gas underflow
                 let gas_used = initial_gas.saturating_sub(evm.gas);
@@ -165,14 +182,14 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
             }
             
             // Popup logic
-            if let Some(err_msg) = &last_error {
-                let area = centered_rect(60, 30, f.area());
-                let popup = Paragraph::new(format!("Execution Halted!\n\nReason: {}", err_msg))
-                    .style(Style::default().bg(Color::Red).fg(Color::White))
-                    .block(Block::default().borders(Borders::ALL).title(" ERROR "));
-                f.render_widget(Clear, area);
-                f.render_widget(popup, area);
-            }
+            // if let Some(err_msg) = &stop_reason {
+            //     let area = centered_rect(60, 30, f.area());
+            //     let popup = Paragraph::new(format!("Execution Halted!\n\nReason: {}", err_msg))
+            //         .style(Style::default().bg(Color::Red).fg(Color::White))
+            //         .block(Block::default().borders(Borders::ALL).title(" ERROR "));
+            //     f.render_widget(Clear, area);
+            //     f.render_widget(popup, area);
+            // }
         })?;
 
         // ... [Keep Input Handling] ...
@@ -181,7 +198,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
                 match key.code {
                     KeyCode::Char('q') => return Ok(()),
                     KeyCode::Char('n') => {
-                        if last_error.is_none() {
+                        if stop_reason.is_none() {
                             // PEEK
                             if evm.pc < evm.program.len() {
                                 let op = evm.program[evm.pc];
@@ -193,9 +210,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
 
                              match evm.step() {
                                 Ok(cont) => {
-                                    if !cont { last_error = Some("Program Finished (STOP)".to_string()); }
+                                    if !cont { stop_reason = Some("Program Finished (STOP)".to_string()); }
                                 }
-                                Err(e) => { last_error = Some(format!("{:?}", e)); }
+                                Err(e) => { stop_reason = Some(format!("{:?}", e)); }
                             }
                         }
                     }
