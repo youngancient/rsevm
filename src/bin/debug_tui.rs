@@ -147,7 +147,7 @@ fn run_setup_wizard<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<Option
                 },
 
                 SetupStage::ManualInput => {
-                    let instructions = Paragraph::new("Enter Bytecode (Hex string, e.g., '60ff01'):\n(Press Enter to Confirm)")
+                    let instructions = Paragraph::new("Enter Bytecode (Hex string, e.g., '0x60ff60'):\n(Press Enter to Confirm)")
                         .alignment(ratatui::layout::Alignment::Center);
                     
                     let input = Paragraph::new(input_buffer.as_str())
