@@ -294,7 +294,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
         code_state.select(Some(evm.pc));
 
         terminal.draw(|f| {
-            // ... [Keep your existing Layout definitions: main_chunks, top_row, bottom_row] ...
             let main_chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
@@ -343,8 +342,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
                         .collect::<Vec<String>>()
                         .join(" ");
                     
-                    // Optional: Add ASCII representation on the right?
-                    // For now, let's just keep it clean with Offset + Hex
                     ListItem::new(format!("{:04x}: {}", i * 16, hex_val))
                 })
                 .collect();
@@ -397,7 +394,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, evm: &mut EVM, initial_gas: u
             }
         })?;
 
-        // ... [Keep Input Handling] ...
         if crossterm::event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
