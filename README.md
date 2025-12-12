@@ -78,7 +78,7 @@ Built with `ratatui` and `crossterm`, the debugger allows you to step through by
 * **Error Modals:** Graceful handling of `OutOfGas`, `StackOverflow`, `StackUnderflow`, and other runtime errors.
 
 ### Supported Opcodes
-Check `src/opcodes/opcodes.rs` for supported opcodes.
+Check `src/opcodes/opcodes.rs` for supported opcodes. This project supports EVM opcodes up to the Cancun Hardfork
 
 ## Installation & Usage
 
@@ -87,7 +87,7 @@ Check `src/opcodes/opcodes.rs` for supported opcodes.
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/youngancient/rsevm.git](https://github.com/youngancient/rsevm.git)
+git clone https://github.com/youngancient/rsevm.git
 cd rsevm
 ```
 
